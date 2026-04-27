@@ -3,6 +3,8 @@
 # You can use a BLE Scanner app on your phone to find the Bluetooth MAC Address of your ODL104 and then place it in the substitutions section below
 #  or I believe the MAC address may be shown when you first pair the ODL104 with your phone 
 
+# NOTE I used secrets for my API Encryption key and OTA passowrd - you will have to adjust accordingly
+
 # IMPORTANT - place the Bluetooth MAC Address of your ODL104 here!!
 substitutions:
   ODL104_Mac_Addr: "YOUR_ODL104_MAC_ADDR_HERE"  # format is "XX:XX:XX:XX:XX:XX"
@@ -19,6 +21,16 @@ esp32:
 
 # Enable logging
 logger:   
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: !secret api_encryption_key
+
+# Enable OTA updates
+ota:
+  - platform: esphome
+    password: !secret ota_password 
 
 wifi:
   ssid: !secret wifi_ssid
