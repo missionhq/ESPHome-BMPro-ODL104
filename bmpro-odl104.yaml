@@ -1,9 +1,28 @@
 
 # YAML for monitoring a BMPro RV Battery system fitted with an ODL104 CAN to BLE Gateway
+# You can use a BLE Scanner app on your phone to find the Bluetooth MAC Address of your ODL104 and then place it in the substitutions section below
+#  or I believe the MAC address may be shown when you first pair the ODL104 with your phone 
 
 # IMPORTANT - place the Bluetooth MAC Address of your ODL104 here!!
 substitutions:
-  ODL104_Mac_Addr: "YOUR_ODL104_MAC_ADDR_HERE"  # format is "00:00:00:00:00:00"
+  ODL104_Mac_Addr: "YOUR_ODL104_MAC_ADDR_HERE"  # format is "XX:XX:XX:XX:XX:XX"
+
+esphome:
+  name: odl104
+  friendly_name: ODL104
+
+esp32:
+  board: esp32dev
+  variant: esp32
+  framework:
+    type: esp-idf  
+
+# Enable logging
+logger:   
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
 
 # It's nice to be able to reboot your ESP32 remotely :)
 button:

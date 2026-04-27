@@ -1,4 +1,8 @@
-** Disclaimer** All of the information below has been gained through trial-and-error so any help in identifying what some of the other packet values or registers are used for would be much appreciated!
+
+##  **Disclaimer** 
+All of the information below has been gained through trial-and-error and so I cannot be held accountable for any inaccuracies in this information!
+
+Any help in identifying what some of the other packet values or registers are used for would be much appreciated!
 
 ### Data Format
 
@@ -33,54 +37,54 @@ This Notification is for the BMPro(0x40) BatteryVoltage(0x62) = 13.337v (0x3419)
 
 So far I have identified 2x data sources; The BMPro (0x40) and the ODL104 (ID=0x90)
 
-#### Device ID = 0x40 <u>(Source = BMPro)</u>
+#### Registers for Device ID = 0x40 <u>(Source = BMPro)</u>
 
-| Register | Name | Data Length | Description | 
+| Register | Name | Length (Bytes) | Description | 
 | :--- | :--- | :--- | :--- |
-| 0x00 | Unknown | 7x Bytes |  |
+| 0x00 | Unknown | 7 |  |
 | 0x01 | Unknown |  |  |
-| 0x0C | Unknown | 1x Byte |  |
+| 0x0C | Unknown | 1 |  |
 | 0x0F | Unknown |  |  |
 | 0x10 | Unknown |  |  |
 | 0x11 | Unknown |  |  |
-| 0x13 | Unknown | 4x Bytes |  |
-| 0x40 | Output 1 | 5x Bytes | byte[0] = on/off state, byte [1..4] = current (mA) as INT32
-| 0x41 | Output 2 | 5x Bytes | byte[0] = on/off state, byte [1..4] = current (mA) as INT32
-| ... |  |  | 
-| 0x47 | Output 8 | 5x Bytes | byte[0] = on/off state, byte [1..4] = current mA as INT32
-| 0x48 | Output 9 | 5x Bytes | byte[0] = on/off state, byte [1..4] = current (mA) as INT32
-| 0x49 | Light 1 | 5x Bytes | byte[0] = on/off state, byte [1..4] = current (mA) as INT32
-| 0x4A | Light 2 | 5x Bytes | byte[0] = on/off state, byte [1..4] = current (mA) as INT32
-| 0x4B | Light 3 | 5x Bytes | byte[0] = on/off state, byte [1..4] = current (mA) as INT32)
-| 0x4C | Pump 1 | 5x Bytes | byte[0] = on/off state, byte [1..4] = current (mA) as INT32
-| 0x4D | Pump 2 | 5x Bytes | byte[0] = on/off state, byte [1..4] = current (mA) as INT32
-| 0x61 | Battery Current | 4x Bytes | Current (mA) as INT32
-| 0x62 | Battery Voltage | 4x Bytes | Voltage (mV) as INT32
-| 0x63 | Unknown | 4x Bytes | Looks like a UINT32
-| 0x64 | Unknown | 4x Bytes | Looks like a UINT32
-| 0x65 | Solar Voltage | 4x Bytes | Seems to be Solar input Voltage (mV) but unsure ?? as INT32
-| 0x66 | Battery Percent | 4x Bytes | 0..100% as UINT32
-| 0x67 | Battery Runtime | 4x Bytes | Runtime in (mins) as UINT32
-| 0x68 | Unknown | 4x Bytes | Looks like a UINT32
-| 0x69 | Status | 2x Bytes | Indicates supply sources present, and ECO mode... BYTE[0] bit 1 = ECO mode, BYTE[1] bit0 = ACSupply, Bit1=AuxSupply, Bit3=SolarSupply
-| 0x6A | Battery Capacity | 4x Bytes | As set in the Mobile App. 300,000 = 300Ah as INT32
-| 0x6B | Aux Voltage | 4x Bytes | Seems to be Aux input Voltage (mV) but unsure ?? as INT32
-| 0x6C | Load Current | 4x Bytes | Total output Current Load on the BMPro (mA) as INT32
-| 0x6D | Supply Current | 4x Bytes | Total Supply Current into the BMPro (mA) as INT32
-| 0x6E | Unknown | 8x Bytes | 
-| 0x6F | Unknown | 8x Bytes | 
-| 0x70 | Unknown | 1x Byte | 
+| 0x13 | Unknown | 4 |  |
+| 0x40 | Output 1 | 5 | byte[0] = on/off state, byte [1..4] = current (mA) as INT32
+| 0x41 | Output 2 | 5 | byte[0] = on/off state, byte [1..4] = current (mA) as INT32
+| ... | ... | ... | ...
+| 0x47 | Output 8 | 5 | byte[0] = on/off state, byte [1..4] = current mA as INT32
+| 0x48 | Output 9 | 5 | byte[0] = on/off state, byte [1..4] = current (mA) as INT32
+| 0x49 | Light 1 | 5 | byte[0] = on/off state, byte [1..4] = current (mA) as INT32
+| 0x4A | Light 2 | 5 | byte[0] = on/off state, byte [1..4] = current (mA) as INT32
+| 0x4B | Light 3 | 5 | byte[0] = on/off state, byte [1..4] = current (mA) as INT32)
+| 0x4C | Pump 1 | 5 | byte[0] = on/off state, byte [1..4] = current (mA) as INT32
+| 0x4D | Pump 2 | 5 | byte[0] = on/off state, byte [1..4] = current (mA) as INT32
+| 0x61 | Battery Current | 4 | Current (mA) as INT32
+| 0x62 | Battery Voltage | 4 | Voltage (mV) as INT32
+| 0x63 | Unknown | 4 | Looks like a INT32
+| 0x64 | Unknown | 4 | Looks like a INT32
+| 0x65 | Solar Voltage | 4 | Seems to be Solar input Voltage (mV) but unsure ?? as INT32
+| 0x66 | Battery Percent | 4 | 0..100% as UINT32
+| 0x67 | Battery Runtime | 4 | Runtime in (mins) as UINT32
+| 0x68 | Unknown | 4 | Looks like a INT32
+| 0x69 | Status | 2 | BIT status flags...... BYTE[0] bit 1 = ECO mode, BYTE[1] bit0 = ACSupply, Bit1=AuxSupply, Bit3=SolarSupply
+| 0x6A | Battery Capacity | 4 | As set in the Mobile App. 300,000 = 300Ah as INT32
+| 0x6B | Aux Voltage | 4 | Seems to be Aux input Voltage (mV) but unsure ?? as INT32
+| 0x6C | Load Current | 4 | Total output Current Load on the BMPro (mA) as INT32
+| 0x6D | Supply Current | 4 | Total Supply Current into the BMPro (mA) as INT32
+| 0x6E | Unknown | 8 | 
+| 0x6F | Unknown | 8 | 
+| 0x70 | Unknown | 1 | 
 
-#### Device ID = 0x90 <u>(Source = ODL104)</u>
+####  Registers for Device ID = 0x90 <u>(Source = ODL104)</u>
 | Register ID | Name | Data Length | Description | 
 | :--- | :--- | :--- | :--- |
-| 0x00 | Unknown | 7x Bytes |  |
+| 0x00 | Unknown | 7 |  |
 | 0x01 | Unknown |  |  |
-| 0x0C | Unknown | 1x Byte |  |
+| 0x0C | Unknown | 1 |  |
 | 0x0F | Unknown |  |  |
 | 0x10 | Unknown |  |  |
 | 0x11 | Unknown |  |  |
-| 0x13 | Unknown | 4x Bytes |  |
-| 0x80 | Tank Levels | 4x Bytes | 1x Byte per tank. Byte value is 0..4 as 0, 25%, 50%, 75%, 100%
-| 0x83 | Unknown | 5x Bytes |
+| 0x13 | Unknown | 4 |  |
+| 0x80 | Tank Levels | 4 | 1x Byte per tank. Byte value is 0..4 as 0, 25%, 50%, 75%, 100%
+| 0x83 | Unknown | 5 |
 
