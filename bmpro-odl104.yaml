@@ -1,40 +1,43 @@
-
-# YAML for monitoring a BMPro RV Battery system fitted with an ODL104 CAN to BLE Gateway
-# You can use a BLE Scanner app on your phone to find the Bluetooth MAC Address of your ODL104 and then place it in the substitutions section below
-#  or I believe the MAC address may be shown when you first pair the ODL104 with your phone 
-
-# NOTE I used secrets for my API Encryption key and OTA passowrd - you will have to adjust accordingly
-
-# IMPORTANT - place the Bluetooth MAC Address of your ODL104 here!!
 substitutions:
-  ODL104_Mac_Addr: "YOUR_ODL104_MAC_ADDR_HERE"  # format is "XX:XX:XX:XX:XX:XX"
+  ODL104_Mac_Addr: "EC:E6:7B:E2:0F:A4"
+  name: "odl104"
+  friendly_name: "ODL104"
 
 esphome:
-  name: odl104
-  friendly_name: ODL104
+  name: "${name}"
+  friendly_name: "${friendly_name}" 
 
 esp32:
   board: esp32dev
   variant: esp32
   framework:
-    type: esp-idf  
+    type: esp-idf
 
 # Enable logging
-logger:   
+logger:
+#  level: DEBUG
+  level: INFO
 
 # Enable Home Assistant API
 api:
   encryption:
-    key: !secret api_encryption_key
+    key: !secret  api_encryption_key
 
-# Enable OTA updates
 ota:
   - platform: esphome
     password: !secret ota_password 
 
 wifi:
-  ssid: !secret wifi_ssid
-  password: !secret wifi_password
+  networks:
+  - ssid: !secret wifi_starlink_ssid
+    password: !secret wifi_starlink_password
+  - ssid: !secret wifi_ssid
+    password: !secret wifi_password
+    manual_ip:
+      static_ip: 192.168.7.204
+      gateway: 192.168.7.254
+      subnet: 255.255.255.0
+      dns1: 192.168.7.254  
 
 # It's nice to be able to reboot your ESP32 remotely :)
 button:
@@ -49,11 +52,38 @@ esp32_ble_tracker:
 ble_client:
   - mac_address: ${ODL104_Mac_Addr}   
     id: odl104
+    on_connect:
+      then:
+        - logger.log: "Connected to BLE Device! Reading data..."
+#        - text_sensor.template.publish:
+#            id: ble_status
+#            state: "connected"
+        # 1. Add a small delay to ensure GATT services are discovered
+        - delay: 200ms
+        - component.update: ble_auth 
+    on_disconnect:
+      then:
+        - logger.log: "Disconnected from BLE Device! Reading data..."
+#        - text_sensor.template.publish:
+#            id: ble_status
+#            state: "disconnected"        
 
 sensor:
   - platform: wifi_signal
     name: "WiFi Signal Strength"
     update_interval: 60s 
+
+# Comment this out once we're happpy
+  - platform: template
+    name: "Heartbeat"
+    id: heartbeat 
+    internal: true                  # after testing, make it an internal sensor so it is not sent to HASS
+    unit_of_measurement: "s"
+    device_class: duration    
+    state_class: total_increasing
+    filters:
+    - delta: 10
+    - heartbeat: 10s
 
   - platform: template
     name: "Battery Current"
@@ -62,6 +92,10 @@ sensor:
     unit_of_measurement: "A"
     device_class: current
     accuracy_decimals: 3
+    filters:
+    - delta: 0.03
+    - heartbeat: 5min
+
   - platform: template
     name: "Battery Voltage"
     #Reg 0x62
@@ -69,21 +103,33 @@ sensor:
     unit_of_measurement: "V"
     device_class: voltage
     accuracy_decimals: 2
+    filters:
+    - delta: 0.05
+    - heartbeat: 5min
+
   - platform: template
-    name: "reg 0x63"
+    name: "Aux Current"
     #Reg 0x63
-    id: reg_63
+    id: aux_current
     unit_of_measurement: "A"
     device_class: current
     accuracy_decimals: 3 
+    filters:
+    - delta: 0.03
+    - heartbeat: 5min
+
   - platform: template
     name: "reg 0x64"
     #Reg 0x64
     id: reg_64
     state_class: "measurement"
+    filters:
+    - delta: 0.05
+    - heartbeat: 5min
 #    unit_of_measurement: "V"
 #    device_class: voltage
 #    accuracy_decimals: 2
+
   - platform: template
     name: "Solar Voltage"
     #Reg 0x65
@@ -91,6 +137,10 @@ sensor:
     unit_of_measurement: "V"
     device_class: voltage
     accuracy_decimals: 2
+    filters:
+    - delta: 0.05
+    - heartbeat: 5min
+
   - platform: template
     name: "Battery Level"
     #Reg 0x66
@@ -98,18 +148,29 @@ sensor:
     unit_of_measurement: "%"
     accuracy_decimals: 0
     device_class: battery
+    filters:
+    - delta: 1
+    - heartbeat: 5min
+
   - platform: template
     name: "Battery Runtime"
     #Reg 0x67
     id: battery_runtime
     unit_of_measurement: "min"
     device_class: duration 
+
   - platform: template
     name: "reg 0x68"
     id: reg_68
 #    unit_of_measurement: "min"
 #    device_class: duration
     state_class: "measurement" 
+
+  - platform: template
+    # Just used for debug - seeing what else Reg 69 does
+    name: "reg 0x69"
+    id: reg_69      
+
   - platform: template
     name: "Battery Capacity"
     #Reg 0x6A
@@ -117,6 +178,8 @@ sensor:
     unit_of_measurement: "Ah"
     accuracy_decimals: 0
     state_class: "measurement"
+    update_interval: 5min
+
   - platform: template
     name: "Aux Voltage"
     #Reg 0x6B
@@ -124,6 +187,10 @@ sensor:
     device_class: voltage
     unit_of_measurement: "V"
     accuracy_decimals: 2
+    filters:
+    - delta: 0.05
+    - heartbeat: 5min
+
   - platform: template
     name: "Load Current"
     #Reg 0x6C
@@ -131,121 +198,192 @@ sensor:
     unit_of_measurement: "A"
     accuracy_decimals: 3
     device_class: current
+    filters:
+    - delta: 0.03
+    - heartbeat: 5min
+
   - platform: template
-    name: "Supply Current"
+    name: "AC Current"
     #Reg 0x6D
-    id: supply_current
+    id: ac_current
     unit_of_measurement: "A"
     accuracy_decimals: 3
     device_class: current  
+    filters:
+    - delta: 0.03
+    - heartbeat: 5min
+
   - platform: template
     name: "Tank 1"
     id: tank_1
     unit_of_measurement: "%"
     accuracy_decimals: 0
     icon: "mdi:water-percent"
+    update_interval: 5min
+
   - platform: template
     name: "Tank 2"
     id: tank_2
     unit_of_measurement: "%"
     accuracy_decimals: 0
     icon: "mdi:water-percent"
+    update_interval: 5min
+
   - platform: template
     name: "Tank 3"
     id: tank_3
     unit_of_measurement: "%"
     accuracy_decimals: 0
     icon: "mdi:water-percent"
+    update_interval: 5min
+
   - platform: template
     name: "Tank 4"
     id: tank_4
     unit_of_measurement: "%"
     accuracy_decimals: 0
     icon: "mdi:water-percent"
+    update_interval: 5min
+    
   - platform: template
     name: "Output 1 Current"
     id: output_1_current
     unit_of_measurement: "A"
     device_class: current
     accuracy_decimals: 3 
+    filters:
+    - delta: 0.03
+    - heartbeat: 5min    
+
   - platform: template
     name: "Output 2 Current"
     id: output_2_current
     unit_of_measurement: "A"
     device_class: current
     accuracy_decimals: 3 
+    filters:
+    - delta: 0.03
+    - heartbeat: 5min    
+    
   - platform: template
     name: "Output 3 Current"
     id: output_3_current
     unit_of_measurement: "A"
     device_class: current
     accuracy_decimals: 3 
+    filters:
+    - delta: 0.03
+    - heartbeat: 5min    
+    
   - platform: template
     name: "Output 4 Current"
     id: output_4_current
     unit_of_measurement: "A"
     device_class: current
     accuracy_decimals: 3 
+    filters:
+    - delta: 0.03
+    - heartbeat: 5min    
+    
   - platform: template
     name: "Output 5 Current"
     id: output_5_current
     unit_of_measurement: "A"
     device_class: current
     accuracy_decimals: 3 
+    filters:
+    - delta: 0.03
+    - heartbeat: 5min    
+    
   - platform: template
     name: "Output 6 Current"
     id: output_6_current
     unit_of_measurement: "A"
     device_class: current
     accuracy_decimals: 3 
+    filters:
+    - delta: 0.03
+    - heartbeat: 5min    
+    
   - platform: template
     name: "Output 7 Current"
     id: output_7_current
     unit_of_measurement: "A"
     device_class: current
     accuracy_decimals: 3 
+    filters:
+    - delta: 0.03
+    - heartbeat: 5min    
+    
   - platform: template
     name: "Output 8 Current"
     id: output_8_current
     unit_of_measurement: "A"
     device_class: current
     accuracy_decimals: 3 
+    filters:
+    - delta: 0.03
+    - heartbeat: 5min    
+    
   - platform: template
     name: "Output 9 Current"
     id: output_9_current
     unit_of_measurement: "A"
     device_class: current
     accuracy_decimals: 3 
+    filters:
+    - delta: 0.03
+    - heartbeat: 5min    
+    
   - platform: template
     name: "Light 1 Current"
     id: light_1_current
     unit_of_measurement: "A"
     device_class: current
     accuracy_decimals: 3    
+    filters:
+    - delta: 0.03
+    - heartbeat: 5min    
+    
   - platform: template
     name: "Light 2 Current"
     id: light_2_current
     unit_of_measurement: "A"
     device_class: current
     accuracy_decimals: 3    
+    filters:
+    - delta: 0.03
+    - heartbeat: 5min    
+    
   - platform: template
     name: "Light 3 Current"
     id: light_3_current
     unit_of_measurement: "A"
     device_class: current
     accuracy_decimals: 3
+    filters:
+    - delta: 0.03
+    - heartbeat: 5min    
+    
   - platform: template
     name: "Pump 1 Current"
     id: pump_1_current
     unit_of_measurement: "A"
     device_class: current
     accuracy_decimals: 3
+    filters:
+    - delta: 0.03
+    - heartbeat: 5min    
+    
   - platform: template
     name: "Pump 2 Current"
     id: pump_2_current
     unit_of_measurement: "A"
     device_class: current
     accuracy_decimals: 3
+    filters:
+    - delta: 0.03
+    - heartbeat: 5min    
 
 binary_sensor:
   - platform: template
@@ -276,26 +414,6 @@ binary_sensor:
     name: "Output 9"
     id: output_9
   - platform: template
-    name: "Light 1"
-    id: light_1
-    icon: "mdi:lightbulb-outline"  # Sets the static icon
-  - platform: template
-    name: "Light 2"
-    id: light_2
-    icon: "mdi:lightbulb-outline"  # Sets the static icon
-  - platform: template
-    name: "Light 3"
-    id: light_3
-    icon: "mdi:lightbulb-outline"  # Sets the static icon
-  - platform: template
-    name: "Pump 1"
-    id: pump_1
-    icon: "mdi:water-pump"  # Sets the static icon
-  - platform: template
-    name: "Pump 2"
-    id: pump_2
-    icon: "mdi:water-pump"  # Sets the static icon
-  - platform: template
     name: "AC Supply"
     id: ac_supply
     device_class: power 
@@ -311,9 +429,180 @@ binary_sensor:
     name: "ECO Mode"
     id: eco_mode
 
-# This internal "Sensor" acts as the listener for notifications
-# Then publishes the state of the above sensors accordingly
+switch:
+  - platform: template
+    name: "Light 1"
+    id: light_1
+    icon: "mdi:lightbulb-outline"  # Sets the static icon
+    turn_on_action:
+      - ble_client.ble_write:
+          id: odl104
+          service_uuid: '53455445-4320-434e-3130-310000000000'         # :) "SETEC CN101" 
+          characteristic_uuid: 'ffffff53-4554-4543-2043-414e20424c45'  # :) "SETEC CAN BLE"
+          value: [0x3e, 0x00, 0x40, 0x49, 0x01, 0x01]
+    turn_off_action:
+      - ble_client.ble_write:
+          id: odl104
+          service_uuid: '53455445-4320-434e-3130-310000000000'         # :) "SETEC CN101" 
+          characteristic_uuid: 'ffffff53-4554-4543-2043-414e20424c45'  # :) "SETEC CAN BLE"
+          value: [0x3e, 0x00, 0x40, 0x49, 0x01, 0x00]
+  - platform: template
+    name: "Light 2"
+    id: light_2
+    icon: "mdi:lightbulb-outline"  # Sets the static icon
+    turn_on_action:
+      - ble_client.ble_write:
+          id: odl104
+          service_uuid: '53455445-4320-434e-3130-310000000000'         # :) "SETEC CN101" 
+          characteristic_uuid: 'ffffff53-4554-4543-2043-414e20424c45'  # :) "SETEC CAN BLE"
+          value: [0x3e, 0x00, 0x40, 0x4A, 0x01, 0x01]
+    turn_off_action:
+      - ble_client.ble_write:
+          id: odl104
+          service_uuid: '53455445-4320-434e-3130-310000000000'         # :) "SETEC CN101" 
+          characteristic_uuid: 'ffffff53-4554-4543-2043-414e20424c45'  # :) "SETEC CAN BLE"
+          value: [0x3e, 0x00, 0x40, 0x4A, 0x01, 0x00]
+  - platform: template
+    name: "Light 3"
+    id: light_3
+    icon: "mdi:lightbulb-outline"  # Sets the static icon
+    turn_on_action:
+      - ble_client.ble_write:
+          id: odl104
+          service_uuid: '53455445-4320-434e-3130-310000000000'         # :) "SETEC CN101" 
+          characteristic_uuid: 'ffffff53-4554-4543-2043-414e20424c45'  # :) "SETEC CAN BLE"
+          value: [0x3e, 0x00, 0x40, 0x4B, 0x01, 0x01]
+    turn_off_action:
+      - ble_client.ble_write:
+          id: odl104
+          service_uuid: '53455445-4320-434e-3130-310000000000'         # :) "SETEC CN101" 
+          characteristic_uuid: 'ffffff53-4554-4543-2043-414e20424c45'  # :) "SETEC CAN BLE"
+          value: [0x3e, 0x00, 0x40, 0x4B, 0x01, 0x00]
+  - platform: template
+    name: "Pump 1"
+    id: pump_1
+    icon: "mdi:lightbulb-outline"  # Sets the static icon
+    turn_on_action:
+      - ble_client.ble_write:
+          id: odl104
+          service_uuid: '53455445-4320-434e-3130-310000000000'         # :) "SETEC CN101" 
+          characteristic_uuid: 'ffffff53-4554-4543-2043-414e20424c45'  # :) "SETEC CAN BLE"
+          value: [0x3e, 0x00, 0x40, 0x4C, 0x01, 0x01]
+    turn_off_action:
+      - ble_client.ble_write:
+          id: odl104
+          service_uuid: '53455445-4320-434e-3130-310000000000'         # :) "SETEC CN101" 
+          characteristic_uuid: 'ffffff53-4554-4543-2043-414e20424c45'  # :) "SETEC CAN BLE"
+          value: [0x3e, 0x00, 0x40, 0x4C, 0x01, 0x00]
+  - platform: template
+    name: "Pump 2"
+    id: pump_2
+    icon: "mdi:lightbulb-outline"  # Sets the static icon
+    turn_on_action:
+      - ble_client.ble_write:
+          id: odl104
+          service_uuid: '53455445-4320-434e-3130-310000000000'         # :) "SETEC CN101" 
+          characteristic_uuid: 'ffffff53-4554-4543-2043-414e20424c45'  # :) "SETEC CAN BLE"
+          value: [0x3e, 0x00, 0x40, 0x4D, 0x01, 0x01]
+    turn_off_action:
+      - ble_client.ble_write:
+          id: odl104
+          service_uuid: '53455445-4320-434e-3130-310000000000'         # :) "SETEC CN101" 
+          characteristic_uuid: 'ffffff53-4554-4543-2043-414e20424c45'  # :) "SETEC CAN BLE"
+          value: [0x3e, 0x00, 0x40, 0x4D, 0x01, 0x00]
+
+globals:
+  - id: auth_resp
+    restore_value: no
+    type: "uint8_t[4]"
+    initial_value: '{0x00, 0x00, 0x00, 0x00}'   
+
 text_sensor:
+  - platform: template
+    name: "Connection State"
+    id: ble_status
+ 
+  - platform: template
+    # Just used for debug - seeing what else Reg 69 does
+    name: "reg 0x6E"
+    id: reg_6E  
+  - platform: template
+    # Just used for debug - seeing what else Reg 69 does
+    name: "reg 0x6F"
+    id: reg_6F  
+  - platform: template
+    # Just used for debug - seeing what else Reg 69 does
+    name: "reg 0x70"
+    id: reg_70  
+
+# This internal "Sensor" is for BLE AUTH
+  - platform: ble_client
+    ble_client_id: odl104
+    id: ble_auth
+    internal: true
+    service_uuid: '53455445-4320-434e-3130-310000000000'         # :) "SETEC CN101" 
+    characteristic_uuid: 'ffffffff-ffff-5345-5445-432041555448'  # :) "SETEC AUTH"
+    notify: true
+    on_notify:
+      then:
+        - if:
+            condition:          # The lambda returns true to run 'then', false to run 'else'
+              lambda: |-
+                // Convert the incoming string 'x' to an array...
+                const uint8_t* data = (const uint8_t*) x.c_str();
+                
+                // Logs the vector with a space between bytes: 01 02 03 04 aa bb
+                std::vector<uint8_t> logdata(x.begin(), x.end());
+                ESP_LOGI("custom", "Auth Req: %s", esphome::format_hex_pretty(logdata).c_str());
+
+                // return true if it was an Auth Request
+                if (x.size() == 4) {    
+                  // Response = Request ^ 0x43313078   ("C10x" ??)
+                  // Use XOR to set our auth_resp global so it can be used in the "THEN"
+                  id(auth_resp)[0] = (data[0] ^ 0x43);  
+                  id(auth_resp)[1] = (data[1] ^ 0x31);  
+                  id(auth_resp)[2] = (data[2] ^ 0x30);  
+                  id(auth_resp)[3] = (data[3] ^ 0x78);  
+                  return true;
+                } else {
+                  return false; 
+                } 
+            then:
+              - ble_client.ble_write:
+                  id: odl104
+                  service_uuid: "53455445-4320-434e-3130-310000000000"
+                  characteristic_uuid: "ffffffff-ffff-5345-5445-432041555448"
+                  #value: [0xed, 0x64, 0xbd, 0x05, 0x13, 0xef, 0xbf, 0xbd]
+                  value: !lambda |-
+                    std::vector<uint8_t> data;
+                    // Loop through the global array 
+                    for (int i = 0; i < 4; i++) {
+                      data.push_back((uint8_t)id(auth_resp)[i]);
+                    }
+                    return data;                   
+            else:
+              - logger.log: "Authenticated..."
+#              lambda: |-
+#                // reflect the response in our ble_status sensor
+#                id(ble_status).publish_state(x);
+           
+# This internal "Sensor" just listend to the heartbeat to check the connection is alive
+  - platform: ble_client
+    ble_client_id: odl104
+    id: ble_heartbeat
+    internal: true
+    service_uuid: '53455445-4320-434e-3130-310000000000'         # :) "SETEC CN101" 
+    characteristic_uuid: 'FFFFFF42-4C45-2048-4541-525442454154'  # :) "BLE HEARTBEAT"
+    notify: false          # <-- Only noyify during testing
+    on_notify:
+      then:
+        - lambda: |-
+            // convert our incoming string into a byte array
+            const uint8_t* data = (const uint8_t*) x.c_str();
+            if (x.size() < 3) return;   // abort if the data is too short
+            id(heartbeat).publish_state(((int16_t)data[1] << 8) | (int16_t)data[0] ); 
+
+# This internal "Sensor" acts as the listener for notifications, then publishes the state of the above sensors accordingly
   - platform: ble_client
     ble_client_id: odl104
     id: ble_receiver
@@ -324,15 +613,22 @@ text_sensor:
     on_notify:
       then:
         - lambda: |-
+            // Logs the vector with a space between bytes: 01 02 03 04 aa bb
+            std::vector<uint8_t> logdata(x.begin(), x.end());
+            //ESP_LOGI("custom", "Reg data: %s", esphome::format_hex_pretty(logdata).c_str());
+
             // convert our incoming string into a byte array
             const uint8_t* data = (const uint8_t*) x.c_str();
             
             size_t n = x.size();
+
             if (n < 6) return;                   // abort if the data is too short
 
             uint8_t packet_type = data[0];
             if (!((packet_type == 0x14) || 
-                  (packet_type == 0x18))) return;  // ignore other packet types (for now)
+                  (packet_type == 0x16) ||  // Change-Of-State (Something else has changed a value - eg the BMPro app)
+                  (packet_type == 0x18)
+                  )) return;  // ignore other packet types (for now)
 
             uint8_t data_source = data[2];
             uint8_t reg_id = data[3];
@@ -349,6 +645,8 @@ text_sensor:
                       (int32_t)data[9]; 
 
               switch (reg_id) {
+                //-- some unknow registers - to investigate --//
+                case 0x00: break;  // 7x bytes {41 42 53 30 39 00 32} = ASCII "ABS09_2" **NOTE arrived with packet_type = 0x14 NOTE**
                 case 0x01: break;  // 8x bytes **NOTE arrived with packet_type = 0x14 NOTE** 
                 case 0x0C: break;  // 1x byte  **NOTE arrived with packet_type = 0x14 NOTE**     
                 case 0x0F: break;  // 8x bytes **NOTE arrived with packet_type = 0x14 NOTE** 
@@ -424,9 +722,9 @@ text_sensor:
                   id(battery_voltage).publish_state(val / 1000.0);
                   break;
 
-                case 0x63:   // Unknown - 4x bytes 0x00000000 (00000000) Looks like a 4x byte iteger as AMPS
+                case 0x63:   // Aux Current (mA)
                   val = ((int32_t)data[5] << 24) | ((int32_t)data[6] << 16) | ((int32_t)data[7] << 8) | (int32_t)data[8];
-                  id(reg_63).publish_state(val / 1000.0);
+                  id(aux_current).publish_state(val / 1000.0);
                   break;
 
                 case 0x64:  // Unknown - 4x bytes 0x00000000 (00000000) Looks like a 4x byte iteger  
@@ -459,6 +757,11 @@ text_sensor:
                   id(ac_supply).publish_state((data[6] & 0x01) == 0x01); 
                   id(aux_supply).publish_state((data[6] & 0x02) == 0x02); 
                   id(solar_supply).publish_state((data[6] & 0x08) == 0x08); 
+
+                  // TEMP set Reg 69 for debugging 
+                  val = ((int16_t)data[5] << 8) | (int16_t)data[6];
+                  id(reg_69).publish_state(val);
+
                   break;
 
                 case 0x6A:  // 300,000 - 4x bytes 0x000493E0 (E0930400) Looks like a 4x byte iteger could be mAmp-Hour battery size  
@@ -478,21 +781,30 @@ text_sensor:
                 
                 case 0x6D: // Supply Current (mA)
                   val = ((int32_t)data[5] << 24) | ((int32_t)data[6] << 16) | ((int32_t)data[7] << 8) | (int32_t)data[8];
-                  id(supply_current).publish_state(val / 1000.0);
+                  id(ac_current).publish_state(val / 1000.0);
                   break;
 
-                case 0x6E: break;  // **NOTE arrived with packet_type = 0x14 NOTE**  
-
-                case 0x6F: break;  // **NOTE arrived with packet_type = 0x14 NOTE**  
-
+                // some unknow registers - to investigate 
+                case 0x6E: // NOTE arrived with packet_type = 0x14 NOTE  
+                  id(reg_6E).publish_state(esphome::format_hex_pretty(logdata).c_str());
+                  break;
+                case 0x6F: // NOTE arrived with packet_type = 0x14 NOTE  
+                  id(reg_6F).publish_state(esphome::format_hex_pretty(logdata).c_str());
+                  break;
                 case 0x70: // 1 byte data - unsure what it is ??
+                  id(reg_70).publish_state(esphome::format_hex_pretty(logdata).c_str());
                   break;
-              }    
+
+                default:
+                  std::vector<uint8_t> logdata(x.begin(), x.end());
+                  ESP_LOGI("custom", "Unknown BMPro Reg: %s", esphome::format_hex_pretty(logdata).c_str());
+                  break;              }    
             } 
 
             // if Data Source is ODL104  
-            else if (data_source = 0x90){ 
+            else if (data_source == 0x90){ 
               switch(reg_id) {
+                //-- some unknow registers - to investigate --//
                 case 0x00: break;  
                 case 0x01: break;  
                 case 0x0C: break;  
@@ -507,7 +819,9 @@ text_sensor:
                   id(tank_4).publish_state(data[5] * 25.0);
                   break;
                 case 0x83: break;
+                default:
+                  std::vector<uint8_t> logdata(x.begin(), x.end());
+                  ESP_LOGI("custom", "Unknown ODL104 Reg: %s", esphome::format_hex_pretty(logdata).c_str());
+                  break;
               } 
             }
-                
-

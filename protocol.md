@@ -14,23 +14,20 @@ The Data received from a BLE notification contains a 4x byte header followed by 
 | :--- | :--- | :--- | :--- |
 | Packet Type | 1 | UINT8 | Ether 0x14 or 0x18  (Unsure what the difference is?) |
 | 0x00 | 1 | UINT8 | Always `0x00` |
-| Source ID | 1 | UINT8 | ID of the Payload source (possibly the node ID on CAN bus ?)  |
+| Source ID | 1 | UINT8 | ID of the Payload source (possibly linked to the node ID on CAN bus ?)  |
 | Register ID | 1 | UINT8 | Register ID |
 | Payload Length | 1 | UINT8 | Data length ($N$) |
 | Payload | $N$ | Bytes | Payload |
 
 Example Data Packet...
 
-  180040620400003419
+  18 00 40 62 04 00 00 34 19
 
-| Value (Hex) | Description |
-| :--- | :--- |
-| 18 | Packet Type = 0x18 |
-| 00 | Padding = 0x00 |
-| 40 | Data Source = 0x40 |
-| 62 | Register ID = 0x62 |
-| 04 | Payload Length = 0x04
-| 00003419 | Payload Value = 0x00003419
+| Pkt Type | Pad | Source | Register  | Length | Payload |
+| :--: | :--: | :--: | :--: | :--: | :--: |
+| 18 | 00 | 40 | 62 |  04 | 00003419 |
+ 
+
 
 This Notification is for the BMPro(0x40) BatteryVoltage(0x62) = 13.337v (0x3419)
 ## Device IDs and Register IDs
