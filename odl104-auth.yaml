@@ -1,0 +1,63 @@
+
+# INCLUDE file for the BMPro ODL104 monitor
+# Authenticates on connect in order to maintain the BLE connection
+# and to allow writes to the ODL104 (eg turn outputs on and off)
+
+globals:
+  - id: auth_resp
+    restore_value: no
+    type: "uint8_t[4]"
+    initial_value: '{0x00, 0x00, 0x00, 0x00}'   
+
+text_sensor:
+  # This internal "Sensor" is for BLE AUTH
+  - platform: ble_client
+    ble_client_id: odl104
+    id: ble_auth
+    internal: true
+    service_uuid: '53455445-4320-434e-3130-310000000000'         # :) "SETEC CN101" 
+    characteristic_uuid: 'ffffffff-ffff-5345-5445-432041555448'  # :) "SETEC AUTH"
+    notify: true
+    on_notify:
+      then:
+        - if:
+            condition:          # The lambda returns true to run 'then', false to run 'else'
+              lambda: |-
+                // Convert the incoming string 'x' to an array...
+                const uint8_t* data = (const uint8_t*) x.c_str();
+                
+                // Logs the vector with a space between bytes: 01 02 03 04 aa bb
+                std::vector<uint8_t> logdata(x.begin(), x.end());
+                ESP_LOGI("custom", "Auth Req: %s", esphome::format_hex_pretty(logdata).c_str());
+
+                // return true if it was an Auth Request
+                if (x.size() == 4) {    
+                  // Response = Request xor 0x43313078   ("C10x" ??)
+                  // Use XOR to set our auth_resp global so it can be used in the "THEN"
+                  id(auth_resp)[0] = (data[0] ^ 0x43);  
+                  id(auth_resp)[1] = (data[1] ^ 0x31);  
+                  id(auth_resp)[2] = (data[2] ^ 0x30);  
+                  id(auth_resp)[3] = (data[3] ^ 0x78);  
+                  return true;
+                } else {
+                  return false; 
+                } 
+            then:
+              - ble_client.ble_write:
+                  id: odl104
+                  service_uuid: "53455445-4320-434e-3130-310000000000"
+                  characteristic_uuid: "ffffffff-ffff-5345-5445-432041555448"
+                  value: !lambda |-
+                    std::vector<uint8_t> data;
+                    // Loop through the global array 
+                    for (int i = 0; i < 4; i++) {
+                      data.push_back((uint8_t)id(auth_resp)[i]);
+                    }
+                    return data;                   
+            else:
+              lambda: |-
+                 if (x.size() > 4)  
+                   // reflect the response in our ble_status sensor
+                   id(ble_status).publish_state(x);
+
+

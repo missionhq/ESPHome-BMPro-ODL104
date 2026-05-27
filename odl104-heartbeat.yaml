@@ -1,0 +1,34 @@
+
+# Optional INCLUDE file for the BMPro ODL104 monitor
+# will track the 1sec heartbeat from the ODL104 and publish it as a sensor in ESPHome
+# this can be used to check the connection is alive and also to trigger automations if the heartbeat stops 
+
+sensor:
+# Comment this out once we're happpy
+  - platform: template
+    name: "Heartbeat"
+    id: heartbeat 
+    internal: true                  # after testing, make it an internal sensor so it is not sent to HASS
+    unit_of_measurement: "s"
+    device_class: duration    
+    state_class: total_increasing
+    filters:
+    - delta: 10
+    - heartbeat: 10s
+
+text_sensor:           
+# This internal "Sensor" just listend to the heartbeat to check the connection is alive
+  - platform: ble_client
+    ble_client_id: odl104
+    id: ble_heartbeat
+    internal: true
+    service_uuid: '53455445-4320-434e-3130-310000000000'         # :) "SETEC CN101" 
+    characteristic_uuid: 'FFFFFF42-4C45-2048-4541-525442454154'  # :) "BLE HEARTBEAT"
+    notify: false          # <-- Only noyify during testing
+    on_notify:
+      then:
+        - lambda: |-
+            // convert our incoming string into a byte array
+            const uint8_t* data = (const uint8_t*) x.c_str();
+            if (x.size() < 3) return;   // abort if the data is too short
+            id(heartbeat).publish_state(((int16_t)data[1] << 8) | (int16_t)data[0] ); 

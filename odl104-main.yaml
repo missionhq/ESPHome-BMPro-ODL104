@@ -1,0 +1,872 @@
+
+# INCLUDE file for the BMPro ODL104 monitor
+
+esp32_ble_tracker:
+  scan_parameters:
+    active: true
+
+# The connection hub
+ble_client:
+  - mac_address: ${ODL104_Mac_Addr}   
+    id: odl104
+    on_connect:
+      then:
+        - logger.log: "Connected to BLE Device!"
+        - text_sensor.template.publish:
+            id: ble_status
+            state: "Connected"
+        # 1. Add a small delay to ensure GATT services are discovered
+        - delay: 200ms
+        - component.update: ble_auth # NOTE: This sensor is defined in odl104-auth.yaml 
+    on_disconnect:
+      then:
+        - logger.log: "Disconnected from BLE Device!"
+        - text_sensor.template.publish:
+            id: ble_status           # NOTE: This sensor is defined in odl104-auth.yaml 
+            state: "Disconnected"        
+
+# default filter values macro for our odl104 sensors
+.template_sensor: &sensor_filter
+  filters:
+  - delta: 0.05
+  - heartbeat:
+      period: 15min
+      optimistic: true
+
+sensor:
+  - platform: template
+    name: "Battery Current"
+    #Reg 0x61
+    id: battery_current 
+    unit_of_measurement: "A"
+    device_class: current
+    accuracy_decimals: 3
+    <<: *sensor_filter
+
+  - platform: template
+    name: "Battery Voltage"
+    #Reg 0x62
+    id: battery_voltage
+    unit_of_measurement: "V"
+    device_class: voltage
+    accuracy_decimals: 2
+    <<: *sensor_filter
+
+  - platform: template
+    name: "Aux Current"
+    #Reg 0x63
+    id: aux_current
+    unit_of_measurement: "A"
+    device_class: current
+    accuracy_decimals: 3 
+    <<: *sensor_filter
+
+  - platform: template
+    name: "Solar Current"
+    #Reg 0x64
+    id: solar_current
+    unit_of_measurement: "A"
+    device_class: current
+    accuracy_decimals: 3 
+    <<: *sensor_filter
+
+  - platform: template
+    name: "Solar Voltage"
+    #Reg 0x65
+    id: solar_voltage
+    unit_of_measurement: "V"
+    device_class: voltage
+    accuracy_decimals: 2
+    <<: *sensor_filter
+
+  - platform: template
+    name: "Battery Level"
+    #Reg 0x66
+    id: battery_pct
+    unit_of_measurement: "%"
+    accuracy_decimals: 0
+    device_class: battery
+    <<: *sensor_filter
+
+  - platform: template
+    name: "Battery Runtime"
+    #Reg 0x67
+    id: battery_runtime
+    unit_of_measurement: "min"
+    device_class: duration 
+
+  - platform: template
+    name: "Battery Capacity"
+    #Reg 0x6A
+    id: battery_capacity
+    unit_of_measurement: "Ah"
+    accuracy_decimals: 0
+    state_class: "measurement"
+    <<: *sensor_filter
+
+  - platform: template
+    name: "Aux Voltage"
+    #Reg 0x6B
+    id: aux_voltage
+    device_class: voltage
+    unit_of_measurement: "V"
+    accuracy_decimals: 2
+    <<: *sensor_filter
+
+  - platform: template
+    name: "Load Current"
+    #Reg 0x6C
+    id: load_current
+    unit_of_measurement: "A"
+    accuracy_decimals: 3
+    device_class: current
+    <<: *sensor_filter
+
+  - platform: template
+    name: "AC-DC Current"
+    #Reg 0x6D
+    id: ac_current
+    unit_of_measurement: "A"
+    accuracy_decimals: 3
+    device_class: current  
+    <<: *sensor_filter
+
+  - platform: template
+    name: "Tank 1"
+    id: tank_1
+    unit_of_measurement: "%"
+    accuracy_decimals: 0
+    icon: "mdi:water-percent"
+    <<: *sensor_filter
+
+  - platform: template
+    name: "Tank 2"
+    id: tank_2
+    unit_of_measurement: "%"
+    accuracy_decimals: 0
+    icon: "mdi:water-percent"
+    <<: *sensor_filter
+
+  - platform: template
+    name: "Tank 3"
+    id: tank_3
+    unit_of_measurement: "%"
+    accuracy_decimals: 0
+    icon: "mdi:water-percent"
+    <<: *sensor_filter
+
+  - platform: template
+    name: "Tank 4"
+    id: tank_4
+    unit_of_measurement: "%"
+    accuracy_decimals: 0
+    icon: "mdi:water-percent"
+    <<: *sensor_filter
+    
+  - platform: template
+    name: "Output 1 Current"
+    id: output_1_current
+    unit_of_measurement: "A"
+    device_class: current
+    accuracy_decimals: 3 
+    <<: *sensor_filter
+
+  - platform: template
+    name: "Output 2 Current"
+    id: output_2_current
+    unit_of_measurement: "A"
+    device_class: current
+    accuracy_decimals: 3 
+    <<: *sensor_filter
+    
+  - platform: template
+    name: "Output 3 Current"
+    id: output_3_current
+    unit_of_measurement: "A"
+    device_class: current
+    accuracy_decimals: 3 
+    <<: *sensor_filter
+    
+  - platform: template
+    name: "Output 4 Current"
+    id: output_4_current
+    unit_of_measurement: "A"
+    device_class: current
+    accuracy_decimals: 3 
+    <<: *sensor_filter
+    
+  - platform: template
+    name: "Output 5 Current"
+    id: output_5_current
+    unit_of_measurement: "A"
+    device_class: current
+    accuracy_decimals: 3 
+    <<: *sensor_filter
+    
+  - platform: template
+    name: "Output 6 Current"
+    id: output_6_current
+    unit_of_measurement: "A"
+    device_class: current
+    accuracy_decimals: 3 
+    <<: *sensor_filter
+    
+  - platform: template
+    name: "Output 7 Current"
+    id: output_7_current
+    unit_of_measurement: "A"
+    device_class: current
+    accuracy_decimals: 3 
+    <<: *sensor_filter
+    
+  - platform: template
+    name: "Output 8 Current"
+    id: output_8_current
+    unit_of_measurement: "A"
+    device_class: current
+    accuracy_decimals: 3 
+    <<: *sensor_filter
+    
+  - platform: template
+    name: "Output 9 Current"
+    id: output_9_current
+    unit_of_measurement: "A"
+    device_class: current
+    accuracy_decimals: 3 
+    <<: *sensor_filter
+    
+  - platform: template
+    name: "Light 1 Current"
+    id: light_1_current
+    unit_of_measurement: "A"
+    device_class: current
+    accuracy_decimals: 3    
+    <<: *sensor_filter
+    
+  - platform: template
+    name: "Light 2 Current"
+    id: light_2_current
+    unit_of_measurement: "A"
+    device_class: current
+    accuracy_decimals: 3    
+    <<: *sensor_filter
+    
+  - platform: template
+    name: "Light 3 Current"
+    id: light_3_current
+    unit_of_measurement: "A"
+    device_class: current
+    accuracy_decimals: 3
+    <<: *sensor_filter
+    
+  - platform: template
+    name: "Pump 1 Current"
+    id: pump_1_current
+    unit_of_measurement: "A"
+    device_class: current
+    accuracy_decimals: 3
+    <<: *sensor_filter
+    
+  - platform: template
+    name: "Pump 2 Current"
+    id: pump_2_current
+    unit_of_measurement: "A"
+    device_class: current
+    accuracy_decimals: 3
+    <<: *sensor_filter
+
+  - platform: template
+    name: "External Temperature"
+    id: ext_temp
+    unit_of_measurement: "°C"
+    device_class: "temperature"
+    state_class: "measurement"
+    accuracy_decimals: 1
+    filters:
+    - delta: 0.5
+    - heartbeat:
+        period: 15min
+        optimistic: true
+
+  - platform: template
+    name: "Internal Temperature"
+    id: int_temp
+    unit_of_measurement: "°C"
+    device_class: "temperature"
+    state_class: "measurement"
+    accuracy_decimals: 1
+    filters:
+    - delta: 0.5
+    - heartbeat:
+        period: 15min
+        optimistic: true
+
+  - platform: template
+    name: "SmartTemp 1 Temperature"
+    id: smarttemp1_temp
+    unit_of_measurement: "°C"
+    device_class: "temperature"
+    state_class: "measurement"
+    accuracy_decimals: 1
+    filters:
+      # 1. First, smooth the rapid fluctuations
+      - sliding_window_moving_average:
+          window_size: 10
+          send_every: 1
+      # 2. Then, only send update if change is significant (reduces chatter)
+      - delta: 1
+      # 3. Or every 15 mins
+      - heartbeat:
+          period: 15min
+          optimistic: true      
+
+  - platform: template
+    name: "SmartTemp 1 Battery Level"
+    id: smarttemp1_battery
+    unit_of_measurement: "%"
+    accuracy_decimals: 0
+    device_class: battery
+    #<<: *sensor_filter   
+    filters:
+      - calibrate_linear:
+          method: least_squares
+          datapoints:
+            # Map battery Readings 71 (from sensor) to 2% (true value)
+            - 71 -> 2
+            - 178 -> 91 
+            - 208 -> 100
+      - delta: 1
+      - heartbeat:
+          period: 15min
+          optimistic: true      
+
+  - platform: template
+    name: "SmartTemp 1 Signal Strength"
+    id: smarttemp1_rssi    
+    device_class: "signal_strength"  
+    state_class: "measurement"
+    unit_of_measurement: "dBm"
+    accuracy_decimals: 0
+    filters:
+      # 1. First, smooth the rapid fluctuations
+      - sliding_window_moving_average:
+          window_size: 10
+          send_every: 1
+      # 2. Then, only send update if change is significant (reduces chatter)
+      - delta: 1
+      # 3. Or every 15 mins
+      - heartbeat:
+          period: 15min
+          optimistic: true     
+
+  - platform: template
+    name: "SmartTemp 1 Humidity"
+    id: smarttemp1_humidity
+    device_class: "humidity"  
+    state_class: "measurement"
+    unit_of_measurement: "%"
+    accuracy_decimals: 1
+    filters:
+      # 1. First, smooth the rapid fluctuations
+      - sliding_window_moving_average:
+          window_size: 10
+          send_every: 1
+      # 2. Then, only send update if change is significant (reduces chatter)
+      - delta: 1
+      # 3. Or every 15 mins
+      - heartbeat:
+          period: 15min
+          optimistic: true    
+
+binary_sensor:
+  - platform: template
+    name: "AC Supply"
+    id: ac_supply
+    device_class: power 
+
+  - platform: template
+    name: "Solar Supply"
+    id: solar_supply
+    device_class: power 
+
+  - platform: template
+    name: "Aux Supply"
+    id: aux_supply
+    device_class: power   
+
+# Define the common BLE write action macro
+.ble_write_action: &ble_write_action
+  id: odl104
+  service_uuid: '53455445-4320-434e-3130-310000000000'          # :) "SETEC CN101" 
+  characteristic_uuid: 'ffffff53-4554-4543-2043-414e20424c45'   # :) "SETEC CAN BLE"
+
+switch:
+  - platform: template
+    name: "Output 1"
+    id: output_1
+    turn_on_action:
+      - ble_client.ble_write:
+          <<: *ble_write_action
+          value: [0x3e, 0x00, 0x40, 0x40, 0x01, 0x01]
+    turn_off_action:
+      - ble_client.ble_write:
+          <<: *ble_write_action
+          value: [0x3e, 0x00, 0x40, 0x40, 0x01, 0x00]
+
+  - platform: template
+    name: "Output 2"
+    id: output_2
+    turn_on_action:
+      - ble_client.ble_write:
+          <<: *ble_write_action
+          value: [0x3e, 0x00, 0x40, 0x41, 0x01, 0x01]
+    turn_off_action:
+      - ble_client.ble_write:
+          <<: *ble_write_action
+          value: [0x3e, 0x00, 0x40, 0x41, 0x01, 0x00]
+
+  - platform: template
+    name: "Output 3"
+    id: output_3
+    turn_on_action:
+      - ble_client.ble_write:
+          <<: *ble_write_action
+          value: [0x3e, 0x00, 0x40, 0x42, 0x01, 0x01]
+    turn_off_action:
+      - ble_client.ble_write:
+          <<: *ble_write_action
+          value: [0x3e, 0x00, 0x40, 0x42, 0x01, 0x00]
+
+  - platform: template
+    name: "Output 4"
+    id: output_4
+    turn_on_action:
+      - ble_client.ble_write:
+          <<: *ble_write_action
+          value: [0x3e, 0x00, 0x40, 0x43, 0x01, 0x01]
+    turn_off_action:
+      - ble_client.ble_write:
+          <<: *ble_write_action
+          value: [0x3e, 0x00, 0x40, 0x43, 0x01, 0x00]
+
+  - platform: template
+    name: "Output 5"
+    id: output_5
+    turn_on_action:
+      - ble_client.ble_write:
+          <<: *ble_write_action
+          value: [0x3e, 0x00, 0x40, 0x44, 0x01, 0x01]
+    turn_off_action:
+      - ble_client.ble_write:
+          <<: *ble_write_action
+          value: [0x3e, 0x00, 0x40, 0x44, 0x01, 0x00]
+
+  - platform: template
+    name: "Output 6"
+    id: output_6
+    turn_on_action:
+      - ble_client.ble_write:
+          <<: *ble_write_action
+          value: [0x3e, 0x00, 0x40, 0x45, 0x01, 0x01]
+    turn_off_action:
+      - ble_client.ble_write:
+          <<: *ble_write_action
+          value: [0x3e, 0x00, 0x40, 0x45, 0x01, 0x00]
+
+  - platform: template
+    name: "Output 7"
+    id: output_7
+    turn_on_action:
+      - ble_client.ble_write:
+          <<: *ble_write_action
+          value: [0x3e, 0x00, 0x40, 0x46, 0x01, 0x01]
+    turn_off_action:
+      - ble_client.ble_write:
+          <<: *ble_write_action
+          value: [0x3e, 0x00, 0x40, 0x46, 0x01, 0x00]
+
+  - platform: template
+    name: "Output 8"
+    id: output_8
+    turn_on_action:
+      - ble_client.ble_write:
+          <<: *ble_write_action
+          value: [0x3e, 0x00, 0x40, 0x47, 0x01, 0x01]
+    turn_off_action:
+      - ble_client.ble_write:
+          <<: *ble_write_action
+          value: [0x3e, 0x00, 0x40, 0x47, 0x01, 0x00]
+
+  - platform: template
+    name: "Output 9"
+    id: output_9
+    turn_on_action:
+      - ble_client.ble_write:
+          <<: *ble_write_action
+          value: [0x3e, 0x00, 0x40, 0x48, 0x01, 0x01]
+    turn_off_action:
+      - ble_client.ble_write:
+          <<: *ble_write_action
+          value: [0x3e, 0x00, 0x40, 0x48, 0x01, 0x00]
+
+  - platform: template
+    name: "Light 1"
+    id: light_1
+    icon: "mdi:lightbulb-outline"  # Sets the static icon
+    turn_on_action:
+      - ble_client.ble_write:
+          <<: *ble_write_action
+          value: [0x3e, 0x00, 0x40, 0x49, 0x01, 0x01]
+    turn_off_action:
+      - ble_client.ble_write:
+          <<: *ble_write_action
+          value: [0x3e, 0x00, 0x40, 0x49, 0x01, 0x00]
+
+  - platform: template
+    name: "Light 2"
+    id: light_2
+    icon: "mdi:lightbulb-outline"  # Sets the static icon
+    turn_on_action:
+      - ble_client.ble_write:
+          <<: *ble_write_action
+          value: [0x3e, 0x00, 0x40, 0x4A, 0x01, 0x01]
+    turn_off_action:
+      - ble_client.ble_write:
+          <<: *ble_write_action
+          value: [0x3e, 0x00, 0x40, 0x4A, 0x01, 0x00]
+
+  - platform: template
+    name: "Light 3"
+    id: light_3
+    icon: "mdi:lightbulb-outline"  # Sets the static icon
+    turn_on_action:
+      - ble_client.ble_write:
+          <<: *ble_write_action
+          value: [0x3e, 0x00, 0x40, 0x4B, 0x01, 0x01]
+    turn_off_action:
+      - ble_client.ble_write:
+          <<: *ble_write_action
+          value: [0x3e, 0x00, 0x40, 0x4B, 0x01, 0x00]
+
+  - platform: template
+    name: "Pump 1"
+    id: pump_1
+    icon: "mdi:water-pump"  # Sets the static icon
+    turn_on_action:
+      - ble_client.ble_write:
+          <<: *ble_write_action
+          value: [0x3e, 0x00, 0x40, 0x4C, 0x01, 0x01]
+    turn_off_action:
+      - ble_client.ble_write:
+          <<: *ble_write_action
+          value: [0x3e, 0x00, 0x40, 0x4C, 0x01, 0x00]
+
+  - platform: template
+    name: "Pump 2"
+    id: pump_2
+    icon: "mdi:water-pump"  # Sets the static icon
+    turn_on_action:
+      - ble_client.ble_write:
+          <<: *ble_write_action
+          value: [0x3e, 0x00, 0x40, 0x4D, 0x01, 0x01]
+    turn_off_action:
+      - ble_client.ble_write:
+          <<: *ble_write_action
+          value: [0x3e, 0x00, 0x40, 0x4D, 0x01, 0x00]
+
+  - platform: template
+    name: "ECO Mode"
+    id: eco_mode
+    turn_on_action:
+      - ble_client.ble_write:
+          <<: *ble_write_action
+          value: [0x3e, 0x00, 0x40, 0x69, 0x02, 0x02, 0x00]
+    turn_off_action:
+      - ble_client.ble_write:
+          <<: *ble_write_action
+          value: [0x3e, 0x00, 0x40, 0x69, 0x02, 0x00, 0x00]          
+
+text_sensor:
+  # Connection State - is also used by odl104-auth.yaml to reflect the authentication status
+  - platform: template
+    name: "Connection State"
+    id: ble_status
+
+  # This internal "Sensor" acts as the listener for notifications, then publishes the state of the above sensors accordingly
+  - platform: ble_client
+    ble_client_id: odl104
+    id: ble_receiver
+    internal: true
+    service_uuid: '53455445-4320-434e-3130-310000000000'         # :) "SETEC CN101" 
+    characteristic_uuid: 'ffffff53-4554-4543-2043-414e20424c45'  # :) "SETEC CAN BLE"
+    notify: true
+    on_notify:
+      then:
+        - lambda: |-
+            // Logs the vector with a space between bytes: 01 02 03 04 aa bb
+            std::vector<uint8_t> logdata(x.begin(), x.end());
+            //ESP_LOGI("custom", "Reg data: %s", esphome::format_hex_pretty(logdata).c_str());
+
+            // convert our incoming string into a byte array
+            const uint8_t* data = (const uint8_t*) x.c_str();
+            
+            size_t n = x.size();
+            if (n < 6) return;                   // abort if the data is too short
+
+            uint8_t packet_type = data[0];
+            if (!((packet_type == 0x14) ||  // Unsure ??
+                  (packet_type == 0x16) ||  // Change-Of-State 
+                  (packet_type == 0x18) ||  // Periodic Notification
+                  (packet_type == 0x1C)     // Occured when we entered ECO mode
+                  )){
+              ESP_LOGI("custom", "Unknown Packet Type: %s", esphome::format_hex_pretty(logdata).c_str());
+              return;  // ignore other packet types (for now)
+            }
+
+            uint8_t data_source = data[2];
+            uint8_t reg_id = data[3];
+            int32_t val = 0;
+
+            // if Data Source is BMPro...
+            if (data_source == 0x40) {  
+              // if it's a digital output then bytes 6..9 hold the current (mAmps)
+              if ((reg_id >= 0x40) && (reg_id <= 0x4D))
+                val = ((int32_t)data[6] << 24) |
+                      ((int32_t)data[7] << 16) | 
+                      ((int32_t)data[8] << 8)  |  
+                      (int32_t)data[9]; 
+
+              switch (reg_id) {
+                //-- some unknow registers - to investigate --//
+                //case 0x00: break;  // 7x bytes {41 42 53 30 39 00 32} = ASCII "ABS09_2" 
+                //case 0x01: break;  // 8x bytes  
+                //case 0x0C: break;  // 1x byte       
+                //case 0x0F: break;  // 8x bytes  
+                //case 0x10: break;  // 8x bytes   
+                //case 0x11: break;  // 8x bytes        
+                //case 0x13: break;  // 4x bytes         
+
+                case 0x40: 
+                  id(output_1).publish_state(data[5] == 1);  // data[5] holds the binary state
+                  id(output_1_current).publish_state(val / 1000.0); 
+                  break;
+                case 0x41: 
+                  id(output_2).publish_state(data[5] == 1); 
+                  id(output_2_current).publish_state(val / 1000.0); 
+                  break;
+                case 0x42: 
+                  id(output_3).publish_state(data[5] == 1); 
+                  id(output_3_current).publish_state(val / 1000.0); 
+                  break;
+                case 0x43: 
+                  id(output_4).publish_state(data[5] == 1); 
+                  id(output_4_current).publish_state(val / 1000.0); 
+                  break;
+                case 0x44: 
+                  id(output_5).publish_state(data[5] == 1); 
+                  id(output_5_current).publish_state(val / 1000.0); 
+                  break;
+                case 0x45: 
+                  id(output_6).publish_state(data[5] == 1); 
+                  id(output_6_current).publish_state(val / 1000.0); 
+                  break;
+                case 0x46: 
+                  id(output_7).publish_state(data[5] == 1); 
+                  id(output_7_current).publish_state(val / 1000.0); 
+                  break;
+                case 0x47: 
+                  id(output_8).publish_state(data[5] == 1); 
+                  id(output_8_current).publish_state(val / 1000.0); 
+                  break;
+                case 0x48: 
+                  id(output_9).publish_state(data[5] == 1); 
+                  id(output_9_current).publish_state(val / 1000.0); 
+                  break;
+                case 0x49: 
+                  id(light_1).publish_state(data[5] == 1); 
+                  id(light_1_current).publish_state(val / 1000.0); 
+                  break;
+                case 0x4A: 
+                  id(light_2).publish_state(data[5] == 1); 
+                  id(light_2_current).publish_state(val / 1000.0); 
+                  break;
+                case 0x4B: 
+                  id(light_3).publish_state(data[5] == 1); 
+                  id(light_3_current).publish_state(val / 1000.0); 
+                  break;
+                case 0x4C: 
+                  id(pump_1).publish_state(data[5] == 1); 
+                  id(pump_1_current).publish_state(val / 1000.0); 
+                  break;
+                case 0x4D: 
+                  id(pump_2).publish_state(data[5] == 1); 
+                  id(pump_2_current).publish_state(val / 1000.0); 
+                  break;
+
+                case 0x61: // Battery Current (mA)
+                  // Reconstruct 4-byte Int (LSB at data[8], MSB at data[5])
+                  val = ((int32_t)data[5] << 24) | ((int32_t)data[6] << 16) | ((int32_t)data[7] << 8) | (int32_t)data[8];
+                  id(battery_current).publish_state(val / 1000.0);
+                  break;
+
+                case 0x62: // Battery Voltage (mV)
+                  val = ((int32_t)data[5] << 24) | ((int32_t)data[6] << 16) | ((int32_t)data[7] << 8) | (int32_t)data[8];
+                  id(battery_voltage).publish_state(val / 1000.0);
+                  break;
+
+                case 0x63:   // Aux Current (mA)
+                  val = ((int32_t)data[5] << 24) | ((int32_t)data[6] << 16) | ((int32_t)data[7] << 8) | (int32_t)data[8];
+                  id(aux_current).publish_state(val / 1000.0);
+                  break;
+
+                case 0x64:   // Solar Current (mA)
+                  val = ((int32_t)data[5] << 24) | ((int32_t)data[6] << 16) | ((int32_t)data[7] << 8) | (int32_t)data[8];
+                  id(solar_current).publish_state(val / 1000.0);
+                  break;
+                  
+                case 0x65:  // solar volts - 4x bytes 0x00000000 (00000000) Looks like a 4x byte iteger as VOLTS  
+                  val = ((int32_t)data[5] << 24) | ((int32_t)data[6] << 16) | ((int32_t)data[7] << 8) | (int32_t)data[8];
+                  id(solar_voltage).publish_state(val / 1000.0);
+                  break;
+
+                case 0x66: // Battery %
+                  val = ((int32_t)data[5] << 24) | ((int32_t)data[6] << 16) | ((int32_t)data[7] << 8) | (int32_t)data[8];
+                  id(battery_pct).publish_state((float)val);
+                  break;
+
+                case 0x67: // Battery Runtime (mins)
+                  val = ((int32_t)data[5] << 24) | ((int32_t)data[6] << 16) | ((int32_t)data[7] << 8) | (int32_t)data[8];
+                  id(battery_runtime).publish_state((float)val);
+                  break;
+
+                case 0x69: // various bits show status of stuff... 
+                  id(eco_mode).publish_state((data[5] & 0x02) == 0x02); 
+                  id(ac_supply).publish_state((data[6] & 0x01) == 0x01); 
+                  id(aux_supply).publish_state((data[6] & 0x02) == 0x02); 
+                  id(solar_supply).publish_state((data[6] & 0x08) == 0x08); 
+                  break;
+
+                case 0x6A:  // 300,000 - 4x bytes 0x000493E0 (E0930400) Looks like a 4x byte iteger could be mAmp-Hour battery size  
+                  val = ((int32_t)data[5] << 24) | ((int32_t)data[6] << 16) | ((int32_t)data[7] << 8) | (int32_t)data[8];
+                  id(battery_capacity).publish_state(val / 1000.0);
+                  break;
+
+                case 0x6B: // 256 - 4x bytes 0x00000100 (00010000) Looks like a 4x byte iteger could be Aux Voltage  
+                  val = ((int32_t)data[5] << 24) | ((int32_t)data[6] << 16) | ((int32_t)data[7] << 8) | (int32_t)data[8];
+                  id(aux_voltage).publish_state(val / 1000.0);
+                  break;
+
+                case 0x6C: // Load Current (mA)
+                  val = ((int32_t)data[5] << 24) | ((int32_t)data[6] << 16) | ((int32_t)data[7] << 8) | (int32_t)data[8];
+                  id(load_current).publish_state(val / 1000.0);
+                  break;
+                
+                case 0x6D: // Supply Current (mA)
+                  val = ((int32_t)data[5] << 24) | ((int32_t)data[6] << 16) | ((int32_t)data[7] << 8) | (int32_t)data[8];
+                  id(ac_current).publish_state(val / 1000.0);
+                  break;
+
+                default:
+                  std::vector<uint8_t> logdata(x.begin(), x.end());
+                  ESP_LOGI("custom", "Unknown BMPro Reg: %s", esphome::format_hex_pretty(logdata).c_str());
+                  break;
+
+              } //end switch  
+
+            } //end if
+
+            // if Data Source is ODL104  
+            else if (data_source == 0x90){ 
+              // ESP_LOGI("custom", "ODL104 Reg: %s", esphome::format_hex_pretty(logdata).c_str()); 
+              switch(reg_id) {
+                //-- some unknow registers - to investigate --//
+                //case 0x00: break;  
+                //case 0x01: break;  
+                //case 0x0C: break;  
+                //case 0x0F: break;  
+                //case 0x10: break;  
+                //case 0x11: break;  
+                //case 0x13: break;  
+
+                case 0x80: // Tank Levels, 1x byte per tank, values are 0 (0%) to 4 (100%) 
+                  id(tank_1).publish_state(data[8] * 25.0);
+                  id(tank_2).publish_state(data[7] * 25.0);
+                  id(tank_3).publish_state(data[6] * 25.0);
+                  id(tank_4).publish_state(data[5] * 25.0);
+                  break;
+                case 0x83:  // seems to be temperature sensors - internal internal and external probe
+                  switch (data[5]){
+                    case 0x01:
+                      val = ((int32_t)data[8] << 8) | (int32_t)data[9];
+                      id(int_temp).publish_state(val / 1000.0);
+                      break;
+                    case 0x02: 
+                      val = ((int32_t)data[8] << 8) | (int32_t)data[9];
+                      id(ext_temp).publish_state(val / 1000.0);
+                      break;
+                  }
+                  break;
+                default:
+                  //std::vector<uint8_t> logdata(x.begin(), x.end());
+                  ESP_LOGI("custom", "Unknown ODL104 Reg: %s", esphome::format_hex_pretty(logdata).c_str());
+                  break;
+
+              } //end switch
+
+            } //end if
+            else
+              ESP_LOGI("custom", "Unknown Device: %s", esphome::format_hex_pretty(logdata).c_str());            
+
+
+# This internal "Sensor" is for SmartConnect sensors 5e132000-73a9-4a6a-ae5f-c7bff0bd075e 5e132001-73a9-4a6a-ae5f-c7bff0bd075e
+  - platform: ble_client
+    ble_client_id: odl104
+    id: ble_smart_connect
+    internal: true
+    service_uuid: '5e132000-73a9-4a6a-ae5f-c7bff0bd075e'         # :) "SETEC CN101" 
+    characteristic_uuid: '5e132001-73a9-4a6a-ae5f-c7bff0bd075e'  
+    notify: true          
+    on_notify:
+      then:
+        - lambda: |-
+            // Logs the vector with a space between bytes: 01 02 03 04 aa bb
+            std::vector<uint8_t> logdata(x.begin(), x.end());
+            ESP_LOGI("custom", "SmartConnect data: %s", esphome::format_hex_pretty(logdata).c_str());
+
+            // convert our incoming string into a byte array
+            const uint8_t* data = (const uint8_t*) x.c_str();
+            
+            size_t n = x.size();
+            if (n < 2) return;                   // abort if the data is too short
+
+            uint8_t packet_type = data[0];
+            int temp = 0;
+
+            switch(packet_type) {
+              //case 0x00: break;
+              //case 0x01: break;
+              //case 0x02: break;
+              //case 0x03: break;
+              //case 0x04: break;
+              //case 0x05: break;
+              //case 0x06: break;
+              //case 0x07: break;
+              //case 0x08: break;
+              //case 0x09: break;
+              //case 0x0A: break;
+              //case 0x0B: break;
+              case 0x0C:  
+                temp = data[11];
+                id(smarttemp1_rssi).publish_state(temp - 255);              // 11th byte is SmartTemp1 RSSI
+                id(smarttemp1_battery).publish_state(data[12]);             // 12th byte is SmartTemp1 Battery - see sensor filter for factor
+                id(smarttemp1_temp).publish_state(data[13]);                // 13th byte is SmartTemp1 Temp
+                id(smarttemp1_humidity).publish_state(data[14]);            // 14th byte is SmartTemp1 Humidity
+                break;            
+              default:
+                std::vector<uint8_t> logdata(x.begin(), x.end());
+                ESP_LOGI("custom", "Unknown SmartConnect Pkt: %s", esphome::format_hex_pretty(logdata).c_str());
+                break;            
+            }
+
+
+
