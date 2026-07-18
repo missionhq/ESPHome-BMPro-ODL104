@@ -1,14 +1,14 @@
 
-##  **Disclaimer** 
+#  **Disclaimer** 
 All of the information below has been gained through trial-and-error and so I cannot be held accountable for any inaccuracies in this information!
 
 Any help in identifying what some of the other packet values or registers are used for would be much appreciated!
 
-### Data Format
+# Data Format
 
-#### <u>CHARACTERISTIC uuid: 'ffffff53-4554-4543-2043-414e20424c45'</u>
+### CHARACTERISTIC uuid: "ffffff53-4554-4543-2043-414e20424c45"
 
-The Data received from a BLE notification on characteristic uuid: 'ffffff53-4554-4543-2043-414e20424c45'  contains a 4x byte header followed by a payload length byte and finally the payload data bytes as...
+BLE notifications on characteristic uuid: "ffffff53-4554-4543-2043-414e20424c45" contains a 4x byte header followed by a payload length byte and finally the payload data bytes as...
 
 < Packet Type > < 0x00 > < Device ID > < Register ID > < Payload Length > < Payload  Data bytes >
   
@@ -32,7 +32,7 @@ Example Data Packet...
 
 
 This Notification is for the BMPro(0x40) BatteryVoltage(0x62) = 13.337v (0x3419)
-## Device IDs and Register IDs
+# Device IDs and Register IDs
 
 So far I have identified 2x data sources; The BMPro (0x40) and the ODL104 (ID=0x90)
 
@@ -74,7 +74,7 @@ So far I have identified 2x data sources; The BMPro (0x40) and the ODL104 (ID=0x
 | 0x6F | Unknown | 8 | 
 | 0x70 | Unknown | 1 | 
 
-####  Registers for Device ID = 0x90 <u>(Source = ODL104)</u>
+###  Registers for Device ID = 0x90 <u>(Source = ODL104)</u>
 | Register ID | Name | Data Length | Description | 
 | :--- | :--- | :--- | :--- |
 | 0x00 | Unknown | 7 |  |
@@ -87,7 +87,7 @@ So far I have identified 2x data sources; The BMPro (0x40) and the ODL104 (ID=0x
 | 0x80 | Tank Levels | 4 | 1x Byte per tank. Byte value is 0..4 as 0, 25%, 50%, 75%, 100%
 | 0x83 | Unknown | 5 |
 
-#### <u>CHARACTERISTIC uuid: '5e132001-73a9-4a6a-ae5f-c7bff0bd075e'</u> 
+### CHARACTERISTIC uuid: "5e132001-73a9-4a6a-ae5f-c7bff0bd075e" 
 
 The Data received from a BLE notification on characteristic uuid: '5e132001-73a9-4a6a-ae5f-c7bff0bd075e'  contains a 4x byte header followed by a payload length byte and finally the payload data bytes.
 It seems to be used for SmartTemp and maybe other Smart devices
@@ -98,7 +98,7 @@ Currently know only 1x register....
 | :--- | :--- | :--- | :--- |
 | 0x0C | SmartTemp | x | Bytes 11-14 for SmartTemp1.. see below |
 
-#### SmartTemp packet
+### SmartTemp packet
 | Byte | Description | 
 | :--- | :--- |
 | 11 |  SmartTemp 1 RSSI |
