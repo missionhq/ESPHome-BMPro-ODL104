@@ -1,6 +1,6 @@
 
 # Optional INCLUDE file for the BMPro ODL104 monitor
-# will track the 1sec heartbeat from the ODL104 and publish it as a sensor in ESPHome
+# will track the 1sec heartbeat from the ODL104 and publish it every 10 secs as a sensor in ESPHome
 # this can be used to check the connection is alive and also to trigger automations if the heartbeat stops 
 
 sensor:
@@ -8,7 +8,7 @@ sensor:
   - platform: template
     name: "Heartbeat"
     id: heartbeat 
-    internal: true                  # after testing, make it an internal sensor so it is not sent to HASS
+    internal: false                   # make it an internal sensor true if if you want itnot sent to HASS
     unit_of_measurement: "s"
     device_class: duration    
     state_class: total_increasing

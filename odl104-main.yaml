@@ -629,12 +629,12 @@ text_sensor:
 
             // if Data Source is BMPro...
             if (data_source == 0x40) {  
-              // if it's a digital output then bytes 6..9 hold the current (mAmps)
+              // if it's a digital output (reg 0x40..0x4D) then bytes 6..9 hold the current (mAmps)
               if ((reg_id >= 0x40) && (reg_id <= 0x4D))
                 val = ((int32_t)data[6] << 24) |
                       ((int32_t)data[7] << 16) | 
                       ((int32_t)data[8] << 8)  |  
-                      (int32_t)data[9]; 
+                       (int32_t)data[9]; 
 
               switch (reg_id) {
                 //-- some unknow registers - to investigate --//
@@ -794,7 +794,7 @@ text_sensor:
                   id(tank_3).publish_state(data[6] * 25.0);
                   id(tank_4).publish_state(data[5] * 25.0);
                   break;
-                case 0x83:  // seems to be temperature sensors - internal internal and external probe
+                case 0x83:  // seems to be temperature sensors - internal and external probe
                   switch (data[5]){
                     case 0x01:
                       val = ((int32_t)data[8] << 8) | (int32_t)data[9];
@@ -807,7 +807,6 @@ text_sensor:
                   }
                   break;
                 default:
-                  //std::vector<uint8_t> logdata(x.begin(), x.end());
                   ESP_LOGI("custom", "Unknown ODL104 Reg: %s", esphome::format_hex_pretty(logdata).c_str());
                   break;
 
@@ -818,7 +817,7 @@ text_sensor:
               ESP_LOGI("custom", "Unknown Device: %s", esphome::format_hex_pretty(logdata).c_str());            
 
 
-# This internal "Sensor" is for SmartConnect sensors 5e132000-73a9-4a6a-ae5f-c7bff0bd075e 5e132001-73a9-4a6a-ae5f-c7bff0bd075e
+# This internal "Sensor" is for SmartConnect sensors 
   - platform: ble_client
     ble_client_id: odl104
     id: ble_smart_connect
@@ -863,7 +862,6 @@ text_sensor:
                 id(smarttemp1_humidity).publish_state(data[14]);            // 14th byte is SmartTemp1 Humidity
                 break;            
               default:
-                std::vector<uint8_t> logdata(x.begin(), x.end());
                 ESP_LOGI("custom", "Unknown SmartConnect Pkt: %s", esphome::format_hex_pretty(logdata).c_str());
                 break;            
             }
