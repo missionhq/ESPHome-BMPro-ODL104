@@ -15,6 +15,9 @@ Only the OdysseyLinks bluetooth MAC address is required. The ESP32 does not need
 
 See the [bmpro-odl104-example.yaml](bmpro-odl104-example.yaml) for a usage example
 
+#  **Disclaimer** 
+This is an unofficial ESPHome integration and has no affiliation with BMPro. All of the information below has been gained through trial-and-error and so I cannot be held accountable for any inaccuracies in this information!
+
 ## More Info:
 
 The OdysseyLink ODL104 uses a number of BLE Characteristic Notifications to notify its data values, with the data containing the packet Type, Data Source, Register ID and payload value as a byte array.

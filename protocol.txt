@@ -1,6 +1,9 @@
 ODL104 BLE Protocol
 ===================
 
+** Disclaimer ** 
+All of the information below has been gained through trial-and-error and so I cannot be held accountable for any inaccuracies in this information!
+
 We can subscribe to notifications on the following characteristics:
 - ffffff53-4554-4543-2043-414e20424c45  (BMPro & ODL104 registers)
 - 5e132001-73a9-4a6a-ae5f-c7bff0bd075e  (SmartTemp registers)
